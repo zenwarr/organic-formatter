@@ -1,0 +1,49 @@
+{
+  "name": "organic-formatter",
+  "version": "1.0.0",
+  "description": "String formatting library",
+  "main": "dist/bundle.js",
+  "typings": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "webpack --env.prod --config ./webpack/webpack.config.js",
+    "watch": "webpack --env.prod=false --watch --config ./webpack/webpack.config.js",
+    "build-tests": "webpack --env.prod=false --config ./webpack/tests.config.js",
+    "test": "mocha ./dist/test --recursive",
+    "build-and-test": "npm run build-tests && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenwarr/organic-formatter.git"
+  },
+  "keywords": [
+    "string",
+    "formatting",
+    "organelle"
+  ],
+  "author": "zenwarr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zenwarr/organic-formatter/issues"
+  },
+  "homepage": "https://github.com/zenwarr/organic-formatter#readme",
+  "dependencies": {
+    "moment": "^2.21.0",
+    "numeral": "^2.0.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/mocha": "^2.2.48",
+    "@types/moment": "^2.13.0",
+    "@types/numeral": "0.0.22",
+    "@types/sinon": "^4.3.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^5.0.4",
+    "sinon": "^4.4.2",
+    "ts-loader": "^4.0.1",
+    "typescript": "^2.7.2",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.11"
+  }
+}
