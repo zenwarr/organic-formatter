@@ -190,16 +190,29 @@ Just write it:
 ## Built-in functions
 
 `lowercase`
+
 `upppercase`
+
 `trim`
+
 `def` --- if first argument is empty, returns some other value instead
+
 `propercase` --- converts string to proper case (ex., `thIs is some title` -> `This is Some Title`)
+
 `add` --- converts arguments to numbers are sums them
+
 `sub`
+
 `wrap` --- outputs its second argument, replacing `@` symbol with the value of first argument
+
 `_lorem` --- outputs `n` words of lorem ipsum
+
 `list` --- takes arguments and converts them to list
+
 `join` --- joins list items with separator
+
 `now` --- returns current date
+
 `format_date` --- formats date using moment.js
+
 `format_num` --- formats number using numeral library.
