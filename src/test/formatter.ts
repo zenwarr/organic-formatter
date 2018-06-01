@@ -42,7 +42,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 8,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: 'var',
@@ -52,7 +52,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 12,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         },
         {
           value: ', hello',
@@ -70,7 +70,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: 'var',
@@ -80,7 +80,33 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 4,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
+        }
+      ]);
+    });
+
+    it("should process a template consisting of the only var with custom block markers", function () {
+      let tokens = tokenize('[var]', {
+        openBlockChar: '[',
+        closeBlockChar: ']'
+      });
+      expect(tokens).to.have.lengthOf(3);
+
+      expect(tokens).to.be.deep.equal([
+        {
+          value: '[',
+          begin: 0,
+          type: TokenType.BlockOpen
+        },
+        {
+          value: 'var',
+          begin: 1,
+          type: TokenType.Ident
+        },
+        {
+          value: ']',
+          begin: 4,
+          type: TokenType.BlockClose
         }
       ]);
     });
@@ -91,7 +117,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: 'var',
@@ -101,7 +127,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 6,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         }
       ]);
     });
@@ -112,7 +138,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: 'var',
@@ -122,7 +148,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 4,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         },
         {
           value: '.',
@@ -138,7 +164,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: '_var',
@@ -148,7 +174,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 5,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         }
       ])
     });
@@ -159,7 +185,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: '_821some.#quant',
@@ -169,7 +195,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 16,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         }
       ]);
     });
@@ -184,12 +210,12 @@ describe("formatter", function () {
       expect(tokens).to.be.deep.equal([
         {
           value: '{',
-          type: TokenType.CurlyOpen,
+          type: TokenType.BlockOpen,
           begin: 0,
         },
         {
           value: '}',
-          type: TokenType.CurlyClose,
+          type: TokenType.BlockClose,
           begin: 2
         }
       ]);
@@ -201,7 +227,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: "some \'quoted\' shit",
@@ -211,7 +237,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 23,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         }
       ]);
     });
@@ -222,7 +248,7 @@ describe("formatter", function () {
         {
           value: '{',
           begin: 0,
-          type: TokenType.CurlyOpen
+          type: TokenType.BlockOpen
         },
         {
           value: 'some \"quoted\" shit',
@@ -232,7 +258,7 @@ describe("formatter", function () {
         {
           value: '}',
           begin: 23,
-          type: TokenType.CurlyClose
+          type: TokenType.BlockClose
         }
       ]);
     });
@@ -241,7 +267,7 @@ describe("formatter", function () {
       let tokens = tokenize('{012}');
       expect(tokens).to.be.deep.equal([
         {
-          type: TokenType.CurlyOpen,
+          type: TokenType.BlockOpen,
           value: '{',
           begin: 0
         },
@@ -251,7 +277,7 @@ describe("formatter", function () {
           begin: 1,
         },
         {
-          type: TokenType.CurlyClose,
+          type: TokenType.BlockClose,
           value: '}',
           begin: 4
         }

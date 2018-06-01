@@ -216,8 +216,9 @@ function* polymArgsCheck(count: number, input: any, ...args: any[]): IterableIte
 }
 
 export class TemplateProcessor {
-  constructor(varResolver?: VarResolver, strictVarResolve: boolean = false) {
+  constructor(varResolver?: VarResolver, strictVarResolve: boolean = false, tokenizeOptions?: TokenizeOptions) {
     this._strictVarResolve = strictVarResolve;
+    this._tokenizeOptions = tokenizeOptions;
     if (varResolver) {
       this.addVarResolver(varResolver);
     }
@@ -245,7 +246,7 @@ export class TemplateProcessor {
   }
 
   async process(input: string): Promise<string> {
-    let nodes = (new AstCreator(tokenize(input))).create();
+    let nodes = (new AstCreator(tokenize(input, this._tokenizeOptions))).create();
     if (nodes.length === 0) {
       return '';
     }
@@ -335,6 +336,7 @@ export class TemplateProcessor {
   protected _varResolvers: VarResolver[] = [];
   protected _funcResolvers: { [name: string]: FuncResolver } = {};
   protected _strictVarResolve: boolean;
+  protected _tokenizeOptions?: TokenizeOptions;
 
   protected _badAst(is: boolean = false): void {
     if (!is) {
@@ -404,8 +406,8 @@ function isValidName(name: string): boolean {
 
 export enum TokenType {
   RawText,
-  CurlyOpen,
-  CurlyClose,
+  BlockOpen,
+  BlockClose,
   BracketOpen,
   BracketClose,
   Filter,
@@ -423,8 +425,6 @@ export interface Token {
   type: TokenType;
 }
 
-const CHAR_CURLY_OPEN = '{'.charCodeAt(0);
-const CHAR_CURLY_CLOSE = '}'.charCodeAt(0);
 const CHAR_FILTER = '|'.charCodeAt(0);
 const CHAR_COMMA = ','.charCodeAt(0);
 const CHAR_BRACKET_OPEN = '('.charCodeAt(0);
@@ -477,7 +477,21 @@ export function replaceEscapeSequences(input: string): string {
   return parts.length > 0 ? parts.join('') : input;
 }
 
-export function tokenize(input: string): Token[] {
+export interface TokenizeOptions {
+  openBlockChar: string,
+  closeBlockChar: string
+}
+
+export function tokenize(input: string, options?: TokenizeOptions): Token[] {
+  if (options && options.openBlockChar.length !== 1) {
+    throw new Error(`openBlockChar should have length of 1, got: ${options.openBlockChar}`);
+  } else if (options && options.closeBlockChar.length !== 1) {
+    throw new Error(`closeBlockChar should have length of 1, got: ${options.closeBlockChar}`);
+  }
+
+  const CHAR_OPEN_BLOCK = ((options && options.openBlockChar) ? options.openBlockChar : '{').charCodeAt(0);
+  const CHAR_CLOSE_BLOCK = ((options && options.closeBlockChar) ? options.closeBlockChar : '}').charCodeAt(0);
+
   let tail = 0, head = -1;
 
   function eat(): void {
@@ -514,20 +528,20 @@ export function tokenize(input: string): Token[] {
         pushToken(TokenType.RawText, 1);
       }
       break;
-    } else if (ch === CHAR_CURLY_OPEN) {
-      // flush raw text before the opening curly bracket
+    } else if (ch === CHAR_OPEN_BLOCK) {
+      // flush raw text before the opening block
       if (head != tail) {
         pushToken(TokenType.RawText, 1);
         eat();
       }
 
-      pushToken(TokenType.CurlyOpen);
+      pushToken(TokenType.BlockOpen);
       insideVar = true;
       ch = nextChar();
       eat();
     } else if (insideVar) {
-      if (ch === CHAR_CURLY_CLOSE) {
-        pushToken(TokenType.CurlyClose);
+      if (ch === CHAR_CLOSE_BLOCK) {
+        pushToken(TokenType.BlockClose);
         insideVar = false;
         ch = nextChar();
         eat();
@@ -665,7 +679,7 @@ class AstCreator {
           value: this._token.value
         });
         this._token = this._next();
-      } else if (this._token.type === TokenType.CurlyOpen) {
+      } else if (this._token.type === TokenType.BlockOpen) {
         // enter a block
         let blockNode: BlockAstNode = {
           type: AstNodeType.Block,
@@ -689,7 +703,7 @@ class AstCreator {
 
             if (this._token == null) {
               throw new Error('Unexpected end of input: block is unclosed');
-            } else if (this._token.type === TokenType.CurlyClose) {
+            } else if (this._token.type === TokenType.BlockClose) {
               // perfectly fine, go next
               this._token = this._next();
             } else {
@@ -702,7 +716,7 @@ class AstCreator {
 
           if (this._token == null) {
             throw new Error('Unexpected end of input: block is unclosed');
-          } else if (this._token.type === TokenType.CurlyClose) {
+          } else if (this._token.type === TokenType.BlockClose) {
             // perfectly fine, go next
             this._token = this._next();
           } else {
@@ -751,7 +765,7 @@ class AstCreator {
 
     let nodes: AstNode[] = [];
 
-    if (this._token.type === TokenType.CurlyClose) {
+    if (this._token.type === TokenType.BlockClose) {
       // empty filter list, this is not good
       throw new Error(`Unexpected end of block`);
     }
@@ -765,7 +779,7 @@ class AstCreator {
       } else if (this._token.type === TokenType.Filter) {
         // process one more filter
         this._token = this._next();
-      } else if (this._token.type === TokenType.CurlyClose) {
+      } else if (this._token.type === TokenType.BlockClose) {
         // end of block, we are done
         return nodes;
       } else {
@@ -840,8 +854,8 @@ class AstCreator {
   }
 }
 
-export function ast(input: string): AstNode[] {
-  let creator = new AstCreator(tokenize(input));
+export function ast(input: string, tokenizeOptions?: TokenizeOptions): AstNode[] {
+  let creator = new AstCreator(tokenize(input, tokenizeOptions));
   return creator.create();
 }
 
