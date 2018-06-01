@@ -187,6 +187,19 @@ Just write it:
 { generate_some_value(123) | lowercase }
 ```
 
+## Custom block markers
+
+You can set custom markers denoting start and end of blocks.
+For example:
+
+```javascript
+const processor = new formatter.TemplateProcessor(formatter.createPropsResolver(/* ... */), false, {
+  openBlockMarker: "%<",
+  closeBlockMarker: ">%"
+});
+processor.process("%< author >%");
+```
+
 ## Built-in functions
 
 `lowercase`

@@ -86,26 +86,26 @@ describe("formatter", function () {
     });
 
     it("should process a template consisting of the only var with custom block markers", function () {
-      let tokens = tokenize('[var]', {
-        openBlockChar: '[',
-        closeBlockChar: ']'
+      let tokens = tokenize('%[var]%', {
+        openBlockMarker: '%[',
+        closeBlockMarker: ']%'
       });
       expect(tokens).to.have.lengthOf(3);
 
       expect(tokens).to.be.deep.equal([
         {
-          value: '[',
+          value: '%[',
           begin: 0,
           type: TokenType.BlockOpen
         },
         {
           value: 'var',
-          begin: 1,
+          begin: 2,
           type: TokenType.Ident
         },
         {
-          value: ']',
-          begin: 4,
+          value: ']%',
+          begin: 5,
           type: TokenType.BlockClose
         }
       ]);

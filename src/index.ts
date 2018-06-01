@@ -478,19 +478,16 @@ export function replaceEscapeSequences(input: string): string {
 }
 
 export interface TokenizeOptions {
-  openBlockChar: string,
-  closeBlockChar: string
+  openBlockMarker: string,
+  closeBlockMarker: string
 }
 
 export function tokenize(input: string, options?: TokenizeOptions): Token[] {
-  if (options && options.openBlockChar.length !== 1) {
-    throw new Error(`openBlockChar should have length of 1, got: ${options.openBlockChar}`);
-  } else if (options && options.closeBlockChar.length !== 1) {
-    throw new Error(`closeBlockChar should have length of 1, got: ${options.closeBlockChar}`);
-  }
+  const openBlockMarker = ((options && options.openBlockMarker) ? options.openBlockMarker : '{');
+  const closeBlockMarker = ((options && options.closeBlockMarker) ? options.closeBlockMarker : '}');
 
-  const CHAR_OPEN_BLOCK = ((options && options.openBlockChar) ? options.openBlockChar : '{').charCodeAt(0);
-  const CHAR_CLOSE_BLOCK = ((options && options.closeBlockChar) ? options.closeBlockChar : '}').charCodeAt(0);
+  const CHAR_OPEN_BLOCK = openBlockMarker.charCodeAt(0),
+      CHAR_CLOSE_BLOCK = closeBlockMarker.charCodeAt(0);
 
   let tail = 0, head = -1;
 
@@ -528,19 +525,21 @@ export function tokenize(input: string, options?: TokenizeOptions): Token[] {
         pushToken(TokenType.RawText, 1);
       }
       break;
-    } else if (ch === CHAR_OPEN_BLOCK) {
+    } else if (ch === CHAR_OPEN_BLOCK && input.slice(head, head + openBlockMarker.length) === openBlockMarker) {
       // flush raw text before the opening block
       if (head != tail) {
         pushToken(TokenType.RawText, 1);
         eat();
       }
 
+      head += openBlockMarker.length - 1;
       pushToken(TokenType.BlockOpen);
       insideVar = true;
       ch = nextChar();
       eat();
     } else if (insideVar) {
-      if (ch === CHAR_CLOSE_BLOCK) {
+      if (ch === CHAR_CLOSE_BLOCK && input.slice(head, head + closeBlockMarker.length) === closeBlockMarker) {
+        head += closeBlockMarker.length - 1;
         pushToken(TokenType.BlockClose);
         insideVar = false;
         ch = nextChar();
