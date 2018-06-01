@@ -229,3 +229,13 @@ processor.process("%< author >%");
 `format_date` --- formats date using moment.js
 
 `format_num` --- formats number using numeral library.
+
+## Custom functions
+
+You can add your own functions to template processor.
+
+```javascript
+processor.addFuncResolver("function_name", (a, b) => a + b);
+```
+
+Callback arguments can be values of any type.
